@@ -18,6 +18,7 @@ const freqData = new Uint8Array(analyser.frequencyBinCount);
 
 
 let mouthVolume = 0;
+let currentAudioSource = null;
 const angerScoreDiv = document.getElementById('anger-score');
 
 
@@ -71,10 +72,19 @@ socket.onmessage = async (event) => {
             const source = audioContext.createBufferSource();//creates the audio player
             source.buffer = audioBuffer;//loads the audio in to player
             source.connect(analyser);//plugs the audio into speakers
+
+            // Stop previous audio if still playing
+            if (currentAudioSource) {
+                try {
+                    currentAudioSource.stop();
+                } catch(e) {}
+            }
+            currentAudioSource = source; 
             source.start(0);//play button
             
             source.onended = () => {
             mouthVolume = 0;
+            currentAudioSource = null;
         };
 
         } catch(err){
@@ -113,16 +123,6 @@ socket.onmessage = async (event) => {
         }
     }
 };
-// Defensive reconnect circuit loop
-    socket.onclose = () => {
-        console.warn("Connection dropped. Attempting automated reconnection in 3 seconds...");
-        setTimeout(connectToBackend, 3000);
-    };
-
-    socket.onerror = (err) => {
-        console.error("Socket layout fault encountered: ", err);
-        socket.close();
-    };
 }
 
 // Start connection logic when the window is ready
@@ -190,6 +190,16 @@ function sendMessage() {
     }
     const text = userInput.value.trim();
     if(text!=="" && socket.readyState === WebSocket.OPEN) {
+
+         // ✅ Stop any currently playing audio
+        if (currentAudioSource) {
+            try {
+                currentAudioSource.stop();
+            } catch(e) {}
+            currentAudioSource = null;
+            mouthVolume = 0;
+        }
+
         socket.send(JSON.stringify({"text": text}));// Send the message as a JSON string to the WebSocket server
         addMessageToChat(text, 'user');// Add the user's message to the chat interface
         userInput.value = '';// Clear the input field after sending the message
