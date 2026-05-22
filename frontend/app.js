@@ -36,6 +36,8 @@ const backendUrl =  'wss://jellobait-production-bb12.up.railway.app/';
 
 
 function connectToBackend() {
+
+    if (socket && socket.readyState === WebSocket.CONNECTING) return; // ← only block mid-handshake
     
     socket = new WebSocket(backendUrl);
 
@@ -46,6 +48,18 @@ function connectToBackend() {
         console.log("Connected to JelloBait voice engine successfully!");
     };
 
+    socket.onclose = () => {
+        console.warn("Connection dropped. Reconnecting in 3 seconds...");
+        socket = null; // ← clear it so the next call starts fresh
+        setTimeout(connectToBackend, 3000);
+    };
+
+    socket.onerror = (err) => {
+        console.error("Socket fault: ", err);
+        socket.close(); // onclose will handle the reconnect
+    };
+
+    
 let audioStartTime = null;
 //Handling data from server
 socket.onmessage = async (event) => {
