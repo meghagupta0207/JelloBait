@@ -134,12 +134,14 @@ body {
     }
 
     /* Keep text readable over light background details */
-    #anger-score {
+   #anger-score {
+        position: fixed;    /* Change from absolute to fixed */
         top: 15px;
         left: 15px;
         font-size: 16px;
-        background: rgba(255, 255, 255, 0.7); /* Light semi-transparent backing card */
+        background: rgba(255, 255, 255, 0.7);
         color: #000000;
         box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        z-index: 999;       /* Make sure it's above everything */
     }
 }
