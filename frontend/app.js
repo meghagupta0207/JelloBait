@@ -32,7 +32,7 @@ function updateMouthFromAnalyser() {
 
 //Connecting to Websocket server
 let socket;
-const backendUrl =  'wss://jellybait-production.up.railway.app';
+const backendUrl =  'wss://jellobait-production-bb12.up.railway.app/';
 
 
 function connectToBackend() {
