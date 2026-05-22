@@ -7,10 +7,10 @@ import websockets
 import json
 import io
 import openai
+from openai import AsyncOpenAI
 import subprocess
 import tempfile
-from pydub import AudioSegment
-from pydub.playback import play
+import uuid
 from dotenv import load_dotenv
 
 #Load the variables from the .env file into memory
@@ -23,9 +23,10 @@ MODEL = "llama-3.1-8b-instant"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 
-client = openai.OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
+client = AsyncOpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
 
 connected_clients = set() # Track connected WebSocket clients
+
 
 # Check if ffmpeg is installed using subprocess
 def is_ffmpeg_installed():
@@ -53,10 +54,11 @@ async def speak_text(text, is_angry, current_websocket):
             if chunk["type"] == "audio":
                 mp3_bytes.write(chunk["data"]) #writes the audio data to the in-memory buffer as it arrives
         
+        # After streaming is complete, we can read the full audio data from the buffer
         mp3_bytes.seek(0)
         raw_audio_binary = mp3_bytes.read() # Get the entire raw audio data as bytes
         
-        
+        # Send the raw audio binary data directly to the client for playback
         await current_websocket.send(raw_audio_binary)
         
     except asyncio.CancelledError:
@@ -78,11 +80,11 @@ def load_prompt(filename = None):
         return ("YOU ARE A Helpful and Honest Assistant. Answer as concisely as possible. constantly maintain ANGER_LEVEL:0 at start of every response. Anger will rise if user makes you angry.")
     
 #CHAT API CALL
-def chat(user_input,messages):
+async def chat(user_input,messages):
     try:
         messages.append({"role": "user", "content": user_input})
         
-        response = client.chat.completions.create(model=MODEL, messages=messages,temperature=0.9, max_tokens=90)
+        response = await client.chat.completions.create(model=MODEL, messages=messages,temperature=0.9, max_tokens=90)
         reply = response.choices[0].message.content
         messages.append({"role": "assistant", "content": reply})
         return reply
@@ -94,10 +96,13 @@ def chat(user_input,messages):
         print(f"!!! OpenAI/Groq API Error: {e} !!!")
         return "[ANGER_LEVEL:0] Sorry, I encountered an unexpected error."
     
-    
+
 async def websocket_handler(websocket):
+    
+    user_id = str(uuid.uuid4())[:8] # Generate a short random user ID for tracking
+    print(f"[CONNECTED] User {user_id} joined the session.")
     connected_clients.add(websocket)
-    print("Browser connected")
+    
     
     # Initialize messages for this specific session
     messages = [{"role": "system", "content": load_prompt()}]
@@ -129,7 +134,7 @@ async def websocket_handler(websocket):
                         pass
                 
                 # 2. Get AI response
-                answer = chat(user_text, messages)
+                answer = await chat(user_text, messages)
                 
                 anger_score = int(answer.split("[ANGER_LEVEL:")[1].split("]")[0])
                 is_angry = anger_score > 90
