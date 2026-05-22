@@ -155,7 +155,7 @@ async def websocket_handler(websocket):
     except websockets.exceptions.ConnectionClosed:
         print("Browser disconnected")
     finally:
-        connected_clients.remove(websocket)
+        connected_clients.discard(websocket)
 
 async def main():
     port = int(os.environ.get("PORT", 8765))  # Railway sets PORT automatically
