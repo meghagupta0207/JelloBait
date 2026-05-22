@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="logo.png">
+    <title>JelloBait</title>
+</head>
+<body>
+    <div class="main-layout">
+        <div id="canvas-container">
+            <div id="anger-score">Anger Score:45 </div>
+        </div>
+
+        <div class="chat_box">
+            <div class ="chat_header"></div>
+                <div id = "chat-messages">
+                    <div class="message bot">JelloBait Here!!!</div>
+                </div>
+                
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="Type your message here...">
+                <button id="send-btn">Send</button>
+            
+            </div>
+        </div>
+    </div>
+</body>
+    <script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@v0.149.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@v0.149.0/examples/jsm/"
+  }
+}
+</script>
+    <script type="module" src="app.js"></script>
+</html>

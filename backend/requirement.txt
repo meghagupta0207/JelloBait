@@ -1,0 +1,6 @@
+pydub
+edge-tts
+numpy
+websockets
+openai
+python-dotenv
