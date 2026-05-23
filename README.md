@@ -38,6 +38,8 @@ JELLO.../
 ├── backend/
 │   ├── prompt.txt               # JelloBait's character prompt
 │   ├── requirement.txt          # Python dependencies
+|   ├── runtime.txt
+|   ├── railway.toml
 │   └── voice.py                 # Python WebSocket server & TTS engine
 ├── frontend/
 │   ├── app.js                   # Three.js frontend, WebSocket client, audio engine
@@ -58,7 +60,6 @@ JELLO.../
 ### Prerequisites
 
 - Python 3.9+
-- Node.js (optional, for local dev server)
 - `ffmpeg` installed and accessible on your PATH
 - A [Groq API key](https://console.groq.com)
 
@@ -72,7 +73,7 @@ pip install websockets openai edge-tts pydub python-dotenv numpy
 echo "GROQ_API_KEY=your_key_here" > .env
 
 # Start the server
-python server.py
+python voice.py
 ```
 
 The server runs on `ws://localhost:8765` by default. When deployed to Railway, it reads the `PORT` environment variable automatically.
@@ -85,9 +86,6 @@ Serve `index.html` from a local static server (required for ES modules and HDRI 
 # Using Python
 python -m http.server 5500
 
-# Or using Node.js
-npx serve .
-```
 
 Then open `http://localhost:5500` in your browser.
 
@@ -129,14 +127,14 @@ The GLB model uses these named meshes for animation:
 
 | Variable | Description |
 |---|---|
-| `GROQ_API_KEY` | Your Groq API key |
+| `GROQ_API_KEYS` | Your Groq API keys |
 | `PORT` | Server port (default: `8765`, auto-set by Railway) |
 
 ---
 
 ## Deployment
 
-The backend is designed for [Railway](https://railway.app). Connect your repo, set `GROQ_API_KEY` in the environment variables, and Railway handles the rest. The frontend can be hosted on any static host (Netlify, Vercel, GitHub Pages).
+The backend is designed for [Railway](https://railway.app). Connect your repo, set `GROQ_API_KEYS` in the environment variables, and Railway handles the rest. The frontend can be hosted on any static host (Netlify, Vercel, GitHub Pages).
 
 Update the `backendUrl` in `app.js` to point to your deployed Railway WebSocket URL:
 
