@@ -22,10 +22,19 @@ load_dotenv()
 VOICE_NORMAL = "en-US-AnaNeural"
 VOICE_ANGRY = "en-US-ChristopherNeural"
 MODEL = "llama-3.1-8b-instant"
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_API_KEYS = [
+    os.environ.get("GROQ_API_KEY_1"),
+    os.environ.get("GROQ_API_KEY_2"),
+    os.environ.get("GROQ_API_KEY_3"),
+    os.environ.get("GROQ_API_KEY_4"),
+    os.environ.get("GROQ_API_KEY_5")
+]
 
+GROQ_API_KEYS = [k for k in GROQ_API_KEYS if k]
+groq_client = [AsyncOpenAI(base_url="https://api.groq.com/openai/v1", api_key=key)
+    for key in GROQ_API_KEYS]
 
-client = AsyncOpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
+current_key_index = 0  # tracks which key is active
 
 connected_clients = set() # Track connected WebSocket clients
 #active_user_tasks={}#Track active stream task per user session
@@ -105,32 +114,49 @@ def load_prompt(filename = None):
     
 #CHAT API CALL
 async def chat(user_input,messages, websocket):
-    try:
-        async with groq_semaphore:           # max 5 concurrent
-            await groq_rate_limiter.wait()   # space out calls
-            
-            messages.append({"role": "user", "content": user_input})
-            
-            response = await client.chat.completions.create(model=MODEL, messages=messages,temperature=0.9, max_tokens=90)
-            reply = response.choices[0].message.content
-            messages.append({"role": "assistant", "content": reply})
-            return reply
+    global current_key_index
+    
+    #TRY EACH KEY
+    for attempt in range(len(groq_client)):
+        client = groq_client[current_key_index]
         
-    except asyncio.CancelledError:
-        # User interrupted — remove the user message we just appended
-        # so conversation history stays clean
-        if messages and messages[-1]["role"] == "user":
-            messages.pop()
-        raise  # re-raise so task cancellation works properly
-    
-    except openai.APITimeoutError:
-        print("!!! Groq API Timed Out !!!")
-        # Return a fallback string matching your start-of-text tag setup
-        return "[ANGER_LEVEL:0] Ugh, my brain stalled for a second. Try saying that again."
-    
-    except Exception as e:
-        print(f"!!! OpenAI/Groq API Error: {e} !!!")
-        return "[ANGER_LEVEL:0] Sorry, I encountered an unexpected error."
+        try:
+            async with groq_semaphore:           # max 5 concurrent
+                await groq_rate_limiter.wait()   # space out calls
+                
+                messages.append({"role": "user", "content": user_input})
+                
+                response = await client.chat.completions.create(model=MODEL, messages=messages,temperature=0.9, max_tokens=90)
+                reply = response.choices[0].message.content
+                messages.append({"role": "assistant", "content": reply})
+                return reply
+            
+        except openai.RateLimitError:
+                # This key is exhausted — rotate to next one
+                print(f"[KEY {current_key_index}] Rate limited, rotating to next key...")
+                if messages and messages[-1]["role"] == "user":
+                    messages.pop()
+                current_key_index = (current_key_index + 1) % len(groq_client)
+                continue  # retry with next key  
+            
+        except asyncio.CancelledError:
+            # User interrupted — remove the user message we just appended
+            # so conversation history stays clean
+            if messages and messages[-1]["role"] == "user":
+                messages.pop()
+            raise  # re-raise so task cancellation works properly
+        
+        except openai.APITimeoutError:
+            print("!!! Groq API Timed Out !!!")
+            # Return a fallback string matching your start-of-text tag setup
+            return "[ANGER_LEVEL:0] Ugh, my brain stalled for a second. Try saying that again."
+        
+        except Exception as e:
+            print(f"!!! OpenAI/Groq API Error: {e} !!!")
+            return "[ANGER_LEVEL:0] Sorry, I encountered an unexpected error."
+        
+    print("!!! ALL KEYS RATE LIMITED !!!")
+    return "[ANGER_LEVEL:0] I'm overwhelmed right now, try again in a minute."
     
 async def handle_response(user_text, messages, websocket, user_id):
     try:
