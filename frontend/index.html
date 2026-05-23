@@ -11,12 +11,35 @@
     <div class="main-layout">
         <div id="canvas-container">
             <div id="anger-score">Anger Score:45 </div>
+            <button id="aboutBtn" onclick="togglePanel()">Note✨</button>
+
+<div id="aboutPanel">
+  <span class="anger-badge">Creator's Note</span>
+  <p class="panel-text">JelloBait was inspired by my brother's personality 🫩 who has a belief "Life is Short So Ragebait people"🤓.</p>
+  <p class="panel-text">With my countless amounts of tears, neck pain, back pain, head pain, etc... i present to you......!!!!</p>
+  <p class="panel-text highlight">JelloBait: The Squishy Savage</p>
+  <p class="panel-text">What it is: A translucent blob of jelly.</p>
+  <p class="panel-text">The Twist: Low-key genius, English expert, talks like a moody teenager.</p>
+  <p class="panel-text">The Rage:bad grammar, wasting his precious time, spamming, trolling and stuff goes on.🫠 </p>
+  <p class="panel-text">The Challenge: Can you RageBait Him 😏??!</p>
+  <hr class="panel-divider">
+  <p class="panel-creator-name">Megha Gupta</p>
+  <p class="panel-creator-role">Creator</p>
+  <a class="social-link" href="https://www.linkedin.com/in/megha-gupta-ba9461324/" target="_blank">linkedin.com/in/megha-gupta-ba9461324/</a>
+</div>
+
+<script>
+  function togglePanel() {
+    const panel = document.getElementById('aboutPanel');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  }
+</script>
         </div>
 
         <div class="chat_box">
             <div class ="chat_header"></div>
                 <div id = "chat-messages">
-                    <div class="message bot">Can you Ragebait JelloBait😏??!</div>
+                    <div class="message bot">Hi JelloBait Here!!!</div>
                      <div id="thinking-indicator">
                         <div class="dot"></div>
                         <div class="dot"></div>
