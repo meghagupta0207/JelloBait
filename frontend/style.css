@@ -107,6 +107,33 @@ body {
     cursor: pointer;
 }
 
+
+#thinking-indicator {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 10px;
+    align-self: flex-start;
+}
+#thinking-indicator.visible {
+    display: flex;
+}
+.dot {
+    width: 7px;
+    height: 7px;
+    background: #424848;
+    border-radius: 50%;
+    animation: bounce 0.6s infinite alternate;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+    from { transform: translateY(0); opacity: 0.35; }
+    to   { transform: translateY(-6px); opacity: 1; }
+}
+
+
 /* --- MOBILE RESPONSIVE LAYOUT STYLES --- */
 @media screen and (max-width: 768px) {
     /* Allow regular vertical scrolling on small screens instead of trapping the viewport */
@@ -133,15 +160,24 @@ body {
         box-sizing: border-box;
     }
 
+     /* ── thinking indicator on mobile ── */
+    #thinking-indicator {
+        padding: 6px 10px;   /* slightly tighter on small screens */
+    }
+    .dot {
+        width: 6px;          /* slightly smaller dots */
+        height: 6px;
+    }
+
+
     /* Keep text readable over light background details */
-   #anger-score {
-        position: fixed;    /* Change from absolute to fixed */
+    #anger-score {
         top: 15px;
         left: 15px;
         font-size: 16px;
-        background: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.7); /* Light semi-transparent backing card */
         color: #000000;
         box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-        z-index: 999;       /* Make sure it's above everything */
     }
 }
+
