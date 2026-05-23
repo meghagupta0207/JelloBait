@@ -20,7 +20,7 @@ const freqData = new Uint8Array(analyser.frequencyBinCount);
 let mouthVolume = 0;
 let currentAudioSource = null;
 const angerScoreDiv = document.getElementById('anger-score');
-
+const thinkingIndicator = document.getElementById('thinking-indicator');
 
 // Call this every animation frame to pull live volume
 function updateMouthFromAnalyser() {
@@ -33,8 +33,8 @@ function updateMouthFromAnalyser() {
 
 //Connecting to Websocket server
 let socket;
+//const backendUrl =  'ws://localhost:8765';
 const backendUrl =  'wss://jellobait-production-bb12.up.railway.app/';
-
 
 function connectToBackend() {
 
@@ -96,18 +96,19 @@ socket.onmessage = async (event) => {
     const data = JSON.parse(event.data);
 
     if(data.type=="text"){
-        addMessageToChat(data.text, 'bot');// Add the bot's response to the chat interface
+    thinkingIndicator.classList.remove('visible'); // ✅ ADD THIS LINE — hide dots when reply arrives
+    addMessageToChat(data.text, 'bot');
 
-        //Checking Trigger
-        if (data.trigger === "go_red") {
-            changeJellyColor(0x8A0303);
-                changeEyeShape(true);
-        }
-        else if (data.trigger === "default") {
-            changeJellyColor(0x08F7EC);
-                changeEyeShape(false);
-        }
+    if (data.trigger === "go_red") {
+        changeJellyColor(0x8A0303);
+        changeEyeShape(true);
     }
+    else if (data.trigger === "default") {
+        changeJellyColor(0x08F7EC);
+        changeEyeShape(false);
+    }
+}
+
 
     if (data.type === "play_thunder") {
             const thunderAudio = new Audio("universfield-loud-thunder-192165.mp3");
@@ -203,6 +204,10 @@ function sendMessage() {
         socket.send(JSON.stringify({"text": text}));// Send the message as a JSON string to the WebSocket server
         addMessageToChat(text, 'user');// Add the user's message to the chat interface
         userInput.value = '';// Clear the input field after sending the message
+
+        chatMessages.appendChild(thinkingIndicator);   // ← ADD THIS LINE
+        thinkingIndicator.classList.add('visible');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
 
@@ -219,6 +224,8 @@ function addMessageToChat(text, sender) {
     
     // 4. Put the bubble inside the chat-messages container
     chatMessages.appendChild(msgDiv);
+
+    chatMessages.insertBefore(msgDiv, thinkingIndicator);
     
     // 5. Scroll to the bottom so the newest message is always visible
     chatMessages.scrollTop = chatMessages.scrollHeight;
