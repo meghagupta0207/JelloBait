@@ -258,7 +258,7 @@ rgbeLoader.load('citrus_orchard_road_puresky_4k.hdr',function(texture) {
 
         texture.mapping =THREE.EquirectangularReflectionMapping;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 0.9; // Brightness control
+        renderer.toneMappingExposure = 1.2; // Brightness control
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         
         scene.environment = texture;
